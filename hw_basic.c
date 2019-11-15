@@ -20,6 +20,8 @@
 #include "hardware.h"
 #include "delay.h"
 
+// Hardware model: Geeetech CY7C68013A dev.board, https://sigrok.org/wiki/Lcsoft_Mini_Board
+
 //-----------------------------------------------------------------------------
 // comment out (undefine!) if you don't want PS, AS or OE signals
 
@@ -34,31 +36,31 @@
 
 /* JTAG TCK, AS/PS DCLK */
 
-sbit at 0xA2          TCK; /* Port C.2 */
-#define bmTCKOE       bmBIT2
+sbit at 0x83          TCK; /* Port A.3 */
+#define bmTCKOE       bmBIT3
 #define SetTCK(x)     do{TCK=(x);}while(0)
 
 /* JTAG TDI, AS ASDI, PS DATA0 */
 
-sbit at 0xA0          TDI; /* Port C.0 */
-#define bmTDIOE       bmBIT0
+sbit at 0x85          TDI; /* Port A.5 */
+#define bmTDIOE       bmBIT5
 #define SetTDI(x)     do{TDI=(x);}while(0)
 
 /* JTAG TMS, AS/PS nCONFIG */
 
-sbit at 0xA3          TMS; /* Port C.3 */
-#define bmTMSOE       bmBIT3
+sbit at 0x87          TMS; /* Port A.7 */
+#define bmTMSOE       bmBIT7
 #define SetTMS(x)     do{TMS=(x);}while(0)
 
 /* JTAG TDO, AS/PS CONF_DONE */
 
-sbit at 0xA1          TDO; /* Port C.1 */
-#define bmTDOOE       bmBIT1
+sbit at 0x86          TDO; /* Port A.6 */
+#define bmTDOOE       bmBIT6
 #define GetTDO(x)     TDO
 
 /* JTAG ENABLE */
-sbit JTAG_EN = 0xA7; /* Port C.7 */
-#define bmJTAG_EN bmBIT7
+sbit JTAG_EN = 0x80; /* Port A.0 */
+#define bmJTAG_EN bmBIT0
 
 //-----------------------------------------------------------------------------
 
@@ -66,8 +68,8 @@ sbit JTAG_EN = 0xA7; /* Port C.7 */
 
   /* AS DATAOUT, PS nSTATUS */
 
-  sbit at 0xA6        ASDO; /* Port C.6 */
-  #define bmASDOOE    bmBIT6
+  sbit at 0x84        ASDO; /* Port A.4 */
+  #define bmASDOOE    bmBIT4
   #define GetASDO(x)  ASDO
 
 #else
@@ -83,15 +85,15 @@ sbit JTAG_EN = 0xA7; /* Port C.7 */
 
   /* AS Mode nCS */
 
-  sbit at 0xA4        NCS; /* Port C.4 */
-  #define bmNCSOE     bmBIT4
+  sbit at 0x82        NCS; /* Port A.2 */
+  #define bmNCSOE     bmBIT2
   #define SetNCS(x)   do{NCS=(x);}while(0)
   #define GetNCS(x)   NCS
 
   /* AS Mode nCE */
 
-  sbit at 0xA5        NCE; /* Port C.5 */
-  #define bmNCEOE     bmBIT5
+  sbit at 0x81        NCE; /* Port A.1 */
+  #define bmNCEOE     bmBIT1
   #define SetNCE(x)   do{NCE=(x);}while(0)
 
   unsigned char ProgIO_ShiftInOut_AS(unsigned char x);
@@ -112,8 +114,8 @@ sbit JTAG_EN = 0xA7; /* Port C.7 */
 
 #ifdef HAVE_OE_LED
 
-  sbit at 0xA7        OELED; /* Port C.7 */
-  #define bmOELEDOE   bmBIT7
+  sbit at 0x87        OELED; /* Port A.0 */
+  #define bmOELEDOE   bmBIT0
   #define SetOELED(x) do{OELED=(x);}while(0)
 
 #else
@@ -151,8 +153,8 @@ void ProgIO_Init(void)
    IFCONFIG =  bmIFCLKSRC | bm3048MHZ | bmIFCLKOE;
    IFCONFIG |= bmASYNC | bmIFCFG1 | bmIFCFG0;
 
-   // set port C output enable (so we can handle the JTAG enable signal)
-   OEC = (1 << 7);
+   // set Port A output enable (so we can handle the JTAG enable signal)
+   OEA = (1 << 7);
 
    // set port E output enable (actually only PE6 is used to enable/disable the 1.2V regulator, but for strange reasons we also have to enable PE1-5)
    OEE = 0x7F;
@@ -161,8 +163,8 @@ void ProgIO_Init(void)
    // more than 100ma)
    IOE = (1 << 6);
 
-   // activate JTAG outputs on Port C
-   OEC = bmTDIOE | bmTCKOE | bmTMSOE | bmJTAG_EN;
+   // activate JTAG outputs on Port A
+   OEA = bmTDIOE | bmTCKOE | bmTMSOE | bmJTAG_EN;
 }
 
 void ProgIO_Set_State(unsigned char d)
